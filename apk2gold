@@ -1,11 +1,16 @@
 #!/bin/sh
-MPATH=`dirname $0`
-FOLDER=`echo $1 | sed -e 's/\.apk//g'`
-$MPATH/osx/apktool d -f $1
-mkdir $FOLDER/src
-mv $FOLDER/smali $FOLDER/.smali
-$MPATH/dex2jar-0.0.9.12/dex2jar.sh $1
+MPATH=`dirname "$0"`
+FOLDER=`basename "$1" .apk`
+JARFILE="$FOLDER/${FOLDER}_dex2jar.jar"
+
+mkdir "$FOLDER" "$FOLDER/src"
+
+"$MPATH/apktool" d -f "$1" "$FOLDER"
+mv "$FOLDER/smali" "$FOLDER/.smali"
+
+"$MPATH/dex2jar-0.0.9.12/d2j-dex2jar.sh" --output "$JARFILE" "$1"
+
 echo "Converting .class files to java..."
-java -jar $MPATH/jd-cli/jd-core-java-1.0.jar ${FOLDER}_dex2jar.jar $FOLDER/src
-rm -rf ${FOLDER}_dex2jar.jar
-python $MPATH/rreassoc.py ${FOLDER}
+java -jar "$MPATH/jd-cli/jd-core-java-1.0.jar" "$JARFILE" "$FOLDER/src"
+rm "$JARFILE"
+python "$MPATH/rreassoc.py" "$FOLDER"
